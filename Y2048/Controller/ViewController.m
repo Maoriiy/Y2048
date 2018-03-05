@@ -26,6 +26,7 @@
 @property (nonatomic,strong) NSMutableArray *combineArray;
 
 @property (nonatomic,assign) BOOL lock;
+@property (nonatomic,assign) BOOL win;
 
 @property (nonatomic,assign) NSInteger score;
 @property (nonatomic,assign) NSInteger turnScore;
@@ -43,6 +44,7 @@
 
     self.score = 0;
     self.bestScore = [[NSUserDefaults standardUserDefaults] integerForKey:@"BestScore"];
+    self.win = NO;
     
     [self subviewClipToCircle];
     
@@ -69,15 +71,20 @@
     c2.delegate = self;
     [self.boardView addSubview:c2];
     [self.cellArray addObject:c2];
-    [c1 showWithScore:2];
-    [c2 showWithScore:2];
+    [c1 showWithScore:[self getCellScore]];
+    [c2 showWithScore:[self getCellScore]];
     
     self.lock = YES;
-    
 
-    
 }
 
+- (int) getCellScore{
+    int i = arc4random_uniform(6);
+    if (i == 2) {
+        return 4;
+    }
+    return 2;
+}
 
 - (void)setupGesture {
     self.view.userInteractionEnabled = YES;
@@ -137,12 +144,23 @@
     self.score += self.turnScore;
     self.turnScore = 0;
     
-    [self addOneCell];
     [self.combineArray removeAllObjects];
     [self.moveArray removeAllObjects];
     
+    if (self.win) {
+        [self showOverLay];
+    } else {
+        [self nextTurn];
+    }
+    
+}
+
+- (void)nextTurn {
+
+    [self addOneCell];
+    
     if (self.cellArray.count == 16) {
-                [self handleSwipeRight];
+        [self handleSwipeRight];
         [self handleSwipeLeft];
         [self handleSwipeUp];
         [self handleSwipeDown];
@@ -194,6 +212,10 @@
         for (CellCombine *cc in self.combineArray) {
             
             self.turnScore +=cc.score;
+            
+            if (cc.score == 2048) {
+                self.win = YES;
+            }
           
             [self.cellArray removeObject:cc.subCell];
             [cc.subCell removeFromSuperview];
@@ -225,7 +247,7 @@
     Cell *c1 = [Cell cellWithlevel:i];
     [self.boardView addSubview:c1];
     [self.cellArray addObject:c1];
-    [c1 showWithScore:2];
+    [c1 showWithScore:[self getCellScore]];
     c1.delegate = self;
     
     
@@ -738,7 +760,7 @@
         label.textAlignment = NSTextAlignmentCenter;
         label.textColor= [UIColor blackColor];
         label.font = [UIFont systemFontOfSize:64];
-        label.text = @"Game Over";
+        label.text = (self.win ? @"You Win!" : @"Game Over");
         [overlay addSubview:label];
         
         UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
