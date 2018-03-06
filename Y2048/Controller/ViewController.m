@@ -20,6 +20,7 @@
 @property (weak, nonatomic) IBOutlet UIView *bestView;
 @property (weak, nonatomic) IBOutlet UIButton *restartBtn;
 @property (nonatomic,strong) UIView *overlay;
+@property (nonatomic,strong) UILabel *transitionLabel;
 
 @property (nonatomic,strong) NSMutableArray *cellArray;
 @property (nonatomic,strong) NSMutableArray *moveArray;
@@ -142,7 +143,8 @@
 
 - (void)turnOver {
     
-    self.score += self.turnScore;
+//    self.score += self.turnScore;
+    [self scoreAdd:self.turnScore];
     self.turnScore = 0;
     
     [self.combineArray removeAllObjects];
@@ -154,6 +156,47 @@
         [self nextTurn];
     }
     
+}
+
+- (void)scoreAdd:(NSInteger)i {
+    self.score += i;
+    NSString *string = [NSString stringWithFormat:@"+%zd",i];
+    
+    
+    CGRect labelFrame = self.scoreLabel.frame;
+    CGSize labelSize = labelFrame.size;
+    CGSize textSize = [self.scoreLabel.text sizeWithAttributes:@{
+                                                                 NSFontAttributeName : [UIFont systemFontOfSize:20],
+                                                                 }];
+    
+    CGPoint point = CGPointMake(labelSize.width * 0.5 + textSize.width *0.5, labelSize.height * 0.5 - textSize.height * 0.5);
+
+    
+    CGSize ss = [string sizeWithAttributes:@{
+                                               NSFontAttributeName : [UIFont systemFontOfSize:20],
+                                               }];
+    CGFloat x = point.x - ss.width;
+    CGFloat y = point.y - ss.height;
+    
+    
+    CGRect rect = CGRectMake(x, y+5, ss.width, ss.height);
+    
+    UILabel *label = [[UILabel alloc] initWithFrame:rect];
+    
+    
+    label.textAlignment = NSTextAlignmentRight;
+    label.font = [UIFont systemFontOfSize:20];
+    label.textColor = [UIColor colorWithRed:252.0/255 green:248.0/255 blue:241.0/255 alpha:1.0];
+    [self.scoreLabel addSubview:label];
+    [label setText:string];
+    
+    //实现分数累加的动画
+    [UIView animateWithDuration:0.5 delay:0.2 options:UIViewAnimationOptionCurveLinear animations:^{
+        label.transform = CGAffineTransformMakeTranslation(0, -10);
+        label.alpha = 0;
+    } completion:^(BOOL finished) {
+        [label removeFromSuperview];
+    }];
 }
 
 - (void)nextTurn {
@@ -827,6 +870,38 @@
 - (void)viewClipToCircle:(UIView *)view radius:(CGFloat)radius {
     view.layer.cornerRadius = radius;
     view.layer.masksToBounds = YES;
+}
+
+-(UILabel *)transitionLabel {
+    if (_transitionLabel == nil) {
+        CGRect labelFrame = self.scoreLabel.frame;
+        CGSize labelSize = labelFrame.size;
+        CGSize textSize = [self.scoreLabel.text sizeWithAttributes:@{
+                                                                NSFontAttributeName : [UIFont systemFontOfSize:20],
+                                                                }];
+        
+        CGPoint point = CGPointMake(labelSize.width * 0.5 + textSize.width *0.5, labelSize.height * 0.5 - textSize.height * 0.5);
+//        NSLog(@"%@",NSStringFromCGPoint(point));
+        
+        CGSize ss = [@"00000" sizeWithAttributes:@{
+                                                 NSFontAttributeName : [UIFont systemFontOfSize:20],
+                                                 }];
+        CGFloat x = point.x - ss.width;
+        CGFloat y = point.y - ss.height;
+        
+        
+        CGRect rect = CGRectMake(x, y+5, ss.width, ss.height);
+        
+        UILabel *label = [[UILabel alloc] initWithFrame:rect];
+        label.alpha = 0.0;
+        
+        label.textAlignment = NSTextAlignmentRight;
+        label.font = [UIFont systemFontOfSize:20];
+        label.textColor = [UIColor colorWithRed:252.0/255 green:248.0/255 blue:241.0/255 alpha:1.0];
+        [self.scoreLabel addSubview:label];
+        _transitionLabel = label;
+    }
+    return _transitionLabel;
 }
 
 - (NSMutableArray *)cellArray {
