@@ -44,7 +44,7 @@
 
     self.score = 0;
     self.bestScore = [[NSUserDefaults standardUserDefaults] integerForKey:@"BestScore"];
-    self.win = NO;
+    
     
     [self subviewClipToCircle];
     
@@ -75,6 +75,7 @@
     [c2 showWithScore:[self getCellScore]];
     
     self.lock = YES;
+    self.win = NO;
 
 }
 
@@ -783,7 +784,14 @@
 
 - (void) newGame {
     [self.overlay removeFromSuperview];
-    [self restartBtnClick:self];
+    NSLog(@"restart");
+    for (Cell *cell  in self.cellArray) {
+        [cell removeFromSuperview];
+    }
+    [self.cellArray removeAllObjects];
+    self.score = 0;
+    
+    [self gameStart];
 }
 
 
@@ -805,14 +813,7 @@
 
 
 - (IBAction)restartBtnClick:(id)sender {
-    NSLog(@"restart");
-    for (Cell *cell  in self.cellArray) {
-        [cell removeFromSuperview];
-    }
-    [self.cellArray removeAllObjects];
-    self.score = 0;
-  
-    [self gameStart];
+    [self newGame];
 }
 
 
